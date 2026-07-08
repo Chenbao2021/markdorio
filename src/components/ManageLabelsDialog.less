@@ -1,0 +1,42 @@
+@import '../styles/mixins.less';
+
+.manage-labels-dialog {
+  .sketch-border();
+  .flat-shadow();
+  background: @paper;
+}
+
+.manage-labels-dialog-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.manage-labels-dialog-title {
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: @dark;
+}
+
+.manage-labels-dialog-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.manage-labels-dialog-empty {
+  color: @muted;
+  font-size: 0.88rem;
+}
+
+.manage-labels-dialog-chip {
+  background: @accent-light;
+}
+
+.manage-labels-dialog-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}

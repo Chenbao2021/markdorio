@@ -1,24 +1,5 @@
-import {
-  Autocomplete,
-  Box,
-  Chip,
-  IconButton,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  type AutocompleteChangeDetails,
-  type AutocompleteChangeReason,
-} from '@mui/material'
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type JSX,
-  type SyntheticEvent,
-  type UIEvent,
-} from 'react'
+import { Box, IconButton, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type JSX, type UIEvent } from 'react'
 import type { Note } from '../data/note'
 import { useAuth } from '../context/AuthContext'
 import { useNotes } from '../context/NotesContext'
@@ -27,7 +8,7 @@ import { FONT_MAP } from '../data/fonts'
 import { NEW_NOTE_PLACEHOLDER } from '../data/newNoteTemplate'
 import { loadGoogleFont } from '../utils/loadGoogleFont'
 import MarkdownPreview from './MarkdownPreview'
-import DeleteLabelDialog from './DeleteLabelDialog'
+import ManageLabelsDialog from './ManageLabelsDialog'
 import ShareDialog from './ShareDialog'
 import './NoteEditor.less'
 
@@ -55,13 +36,11 @@ const ShareDoodle = (): JSX.Element => (
 type MobileView = 'write' | 'preview'
 
 export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Element {
-  const { updateNote, allLabels } = useNotes()
+  const { updateNote } = useNotes()
   const { user } = useAuth()
   const { syncNow } = useNotesSync()
   const [mobileView, setMobileView] = useState<MobileView>('write')
-  const [labelPendingRemoval, setLabelPendingRemoval] = useState<{ label: string; nextLabels: string[] } | null>(
-    null,
-  )
+  const [isLabelsDialogOpen, setIsLabelsDialogOpen] = useState(false)
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -87,30 +66,6 @@ export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Ele
   const handleTextareaBlur = useCallback(() => {
     if (autoSave && user) void syncNow()
   }, [autoSave, user, syncNow])
-
-  const handleLabelsChange = useCallback(
-    (
-      _: SyntheticEvent,
-      newValue: string[],
-      reason: AutocompleteChangeReason,
-      details?: AutocompleteChangeDetails<string>,
-    ) => {
-      const cleaned = [...new Set(newValue.map((label) => label.trim()).filter(Boolean))]
-      if (reason === 'removeOption' && details?.option) {
-        setLabelPendingRemoval({ label: details.option, nextLabels: cleaned })
-        return
-      }
-      updateNote(note.id, { labels: cleaned })
-    },
-    [note.id, updateNote],
-  )
-
-  const handleConfirmRemoveLabel = useCallback(() => {
-    if (labelPendingRemoval) updateNote(note.id, { labels: labelPendingRemoval.nextLabels })
-    setLabelPendingRemoval(null)
-  }, [labelPendingRemoval, note.id, updateNote])
-
-  const handleCancelRemoveLabel = useCallback(() => setLabelPendingRemoval(null), [])
 
   const handleMobileViewChange = useCallback((_: unknown, value: MobileView | null) => {
     if (value) setMobileView(value)
@@ -159,45 +114,20 @@ export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Ele
           className="note-editor-title-input"
           slotProps={{ input: { disableUnderline: true } }}
         />
-        <Autocomplete
-          multiple
-          freeSolo
-          size="small"
-          options={allLabels}
-          value={note.labels}
-          onChange={handleLabelsChange}
-          className="note-editor-labels-input"
-          renderValue={(tagValue, getItemProps) => {
-            if (tagValue.length === 0) return null
-            const { key, ...itemProps } = getItemProps({ index: 0 })
-            return (
-              <>
-                <Chip label={tagValue[0]} size="small" key={key} {...itemProps} />
-                {tagValue.length > 1 && <span className="note-editor-labels-more">…</span>}
-              </>
-            )
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              placeholder={note.labels.length === 0 ? 'Ajouter un libellé…' : ''}
-              slotProps={{
-                ...params.slotProps,
-                input: {
-                  ...params.slotProps.input,
-                  disableUnderline: true,
-                  startAdornment: (
-                    <>
-                      <LabelDoodle />
-                      {params.slotProps.input.startAdornment}
-                    </>
-                  ),
-                },
-              }}
-            />
+        <Box
+          className="note-editor-labels-summary"
+          onClick={() => setIsLabelsDialogOpen(true)}
+          role="button"
+          tabIndex={0}
+        >
+          <LabelDoodle />
+          <Typography className="note-editor-labels-summary-text">
+            {note.labels.length === 0 ? 'Ajouter un libellé' : note.labels[0]}
+          </Typography>
+          {note.labels.length > 1 && (
+            <span className="note-editor-labels-more">+{note.labels.length - 1}</span>
           )}
-        />
+        </Box>
         <IconButton
           className="note-editor-share-btn note-editor-share-btn--desktop"
           aria-label="Partager la note"
@@ -254,11 +184,7 @@ export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Ele
         </Box>
       </Box>
 
-      <DeleteLabelDialog
-        label={labelPendingRemoval?.label ?? null}
-        onClose={handleCancelRemoveLabel}
-        onConfirm={handleConfirmRemoveLabel}
-      />
+      <ManageLabelsDialog note={isLabelsDialogOpen ? note : null} onClose={() => setIsLabelsDialogOpen(false)} />
       <ShareDialog note={isShareDialogOpen ? note : null} onClose={() => setIsShareDialogOpen(false)} />
     </Box>
   )

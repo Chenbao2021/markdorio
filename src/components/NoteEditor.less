@@ -35,80 +35,40 @@
   }
 }
 
-.note-editor-labels-input {
-  flex: 1 1 120px;
-  min-width: 96px;
-  max-width: 204px;
+.note-editor-labels-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 160px;
+  padding: 6px 10px;
+  border: 2px dashed @dashed-border;
+  border-radius: 4px 10px 8px 4px;
+  background: @paper;
+  cursor: pointer;
+  transition: all 0.15s ease;
 
-  .MuiInput-root {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    padding-right: 20px !important;
-    border: 2px dashed @dashed-border;
-    border-radius: 4px 10px 8px 4px;
-    background: @paper;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.85rem;
-    transition: all 0.15s ease;
-    overflow: hidden;
-
-    &:hover {
-      border-color: @accent;
-    }
-
-    &.Mui-focused {
-      border-style: solid;
-      border-color: @accent;
-      background: @accent-light;
-    }
+  &:hover {
+    border-color: @accent;
   }
+}
 
-  .MuiAutocomplete-clearIndicator {
-    padding: 2px;
+.note-editor-labels-summary-text {
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  color: @dark;
+}
 
-    svg {
-      font-size: 16px;
-    }
-  }
-
-  .MuiChip-root {
-    min-width: 0;
-    flex-grow: 1;
-    flex-shrink: 1;
-    max-width: 140px;
-  }
-
-  .MuiAutocomplete-input {
-    min-width: 24px;
-    flex-grow: 0;
-    flex-shrink: 1;
-  }
-
-  .MuiInput-root:has(.MuiChip-root) .MuiAutocomplete-input {
-    flex: 0 1 4px;
-    min-width: 4px;
-  }
-
-  .note-editor-labels-more {
-    flex-shrink: 0;
-    color: @dark;
-    opacity: 0.6;
-    font-weight: 600;
-  }
-
-  @media (max-width: 899px) {
-    .MuiInput-root {
-      padding: 4px 8px;
-      gap: 3px;
-    }
-
-    .MuiChip-root {
-      max-width: 90px;
-    }
-  }
+.note-editor-labels-more {
+  flex-shrink: 0;
+  color: @dark;
+  opacity: 0.6;
+  font-weight: 600;
+  font-size: 0.8rem;
 }
 
 .note-editor-labels-icon {
