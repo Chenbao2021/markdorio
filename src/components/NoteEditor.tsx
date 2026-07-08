@@ -199,7 +199,7 @@ export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Ele
           )}
         />
         <IconButton
-          className="note-editor-share-btn"
+          className="note-editor-share-btn note-editor-share-btn--desktop"
           aria-label="Partager la note"
           onClick={() => setIsShareDialogOpen(true)}
         >
@@ -207,16 +207,25 @@ export default function NoteEditor({ note, autoSave }: NoteEditorProps): JSX.Ele
         </IconButton>
       </Box>
 
-      <ToggleButtonGroup
-        className="note-editor-mobile-toggle"
-        value={mobileView}
-        exclusive
-        onChange={handleMobileViewChange}
-        size="small"
-      >
-        <ToggleButton value="write">Écriture</ToggleButton>
-        <ToggleButton value="preview">Aperçu</ToggleButton>
-      </ToggleButtonGroup>
+      <Box className="note-editor-mobile-bar">
+        <ToggleButtonGroup
+          className="note-editor-mobile-toggle"
+          value={mobileView}
+          exclusive
+          onChange={handleMobileViewChange}
+          size="small"
+        >
+          <ToggleButton value="write">Écriture</ToggleButton>
+          <ToggleButton value="preview">Aperçu</ToggleButton>
+        </ToggleButtonGroup>
+        <IconButton
+          className="note-editor-share-btn note-editor-share-btn--mobile"
+          aria-label="Partager la note"
+          onClick={() => setIsShareDialogOpen(true)}
+        >
+          <ShareDoodle />
+        </IconButton>
+      </Box>
 
       <Box className="note-editor-panes">
         <Box

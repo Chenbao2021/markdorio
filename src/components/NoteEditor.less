@@ -36,9 +36,9 @@
 }
 
 .note-editor-labels-input {
-  flex: 1 1 200px;
-  min-width: 160px;
-  max-width: 340px;
+  flex: 1 1 120px;
+  min-width: 96px;
+  max-width: 204px;
 
   .MuiInput-root {
     display: flex;
@@ -46,6 +46,7 @@
     align-items: center;
     gap: 4px;
     padding: 4px 10px;
+    padding-right: 20px !important;
     border: 2px dashed @dashed-border;
     border-radius: 4px 10px 8px 4px;
     background: @paper;
@@ -65,15 +66,30 @@
     }
   }
 
+  .MuiAutocomplete-clearIndicator {
+    padding: 2px;
+
+    svg {
+      font-size: 16px;
+    }
+  }
+
   .MuiChip-root {
     min-width: 0;
+    flex-grow: 1;
     flex-shrink: 1;
     max-width: 140px;
   }
 
   .MuiAutocomplete-input {
     min-width: 24px;
+    flex-grow: 0;
     flex-shrink: 1;
+  }
+
+  .MuiInput-root:has(.MuiChip-root) .MuiAutocomplete-input {
+    flex: 0 1 4px;
+    min-width: 4px;
   }
 
   .note-editor-labels-more {
@@ -104,9 +120,33 @@
   flex-shrink: 0;
 }
 
+.note-editor-share-btn--mobile {
+  display: none;
+}
+
+.note-editor-mobile-bar {
+  display: none;
+
+  @media (max-width: 899px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 20px 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .note-editor-share-btn--desktop {
+    display: none;
+  }
+
+  .note-editor-share-btn--mobile {
+    display: inline-flex;
+  }
+}
+
 .note-editor-mobile-toggle {
   display: none;
-  margin: 10px 20px 0;
 
   @media (max-width: 899px) {
     display: inline-flex;
