@@ -1,4 +1,4 @@
-import { Box, Button, Chip, CircularProgress, IconButton, Typography } from '@mui/material'
+import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useMemo, useState, type JSX } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Note } from '../data/note'
@@ -123,11 +123,20 @@ function PublicNoteListItem({ note, onSelect }: PublicNoteListItemProps): JSX.El
   return (
     <Box className="notes-sidebar-item notes-sidebar-item--public" onClick={onSelect}>
       <Box className="notes-sidebar-item-main">
-        <Typography className="notes-sidebar-item-title">{note.title || 'Sans titre'}</Typography>
+        <Box className="notes-sidebar-item-title-row">
+          <GlobeDoodle />
+          <Typography className="notes-sidebar-item-title">{note.title || 'Sans titre'}</Typography>
+        </Box>
         <Typography className="notes-sidebar-item-time">{formatRelativeTime(note.updatedAt)}</Typography>
       </Box>
     </Box>
   )
+}
+
+interface UnlabeledEntry {
+  id: string
+  updatedAt: number
+  render: () => JSX.Element
 }
 
 export default function NotesSidebar({ onRequestDelete, onNoteSelected }: NotesSidebarProps): JSX.Element {
@@ -136,9 +145,8 @@ export default function NotesSidebar({ onRequestDelete, onNoteSelected }: NotesS
   const [filterDialogOpen, setFilterDialogOpen] = useState(false)
   const [selectedLabels, setSelectedLabels] = useState<string[]>([])
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
-  const [isPublicSectionOpen, setIsPublicSectionOpen] = useState(false)
   const [openLabel, setOpenLabel] = useState<string | null>(null)
-  const { publicNotes, isLoading: isLoadingPublicNotes } = usePublicSharedNotes()
+  const { publicNotes } = usePublicSharedNotes()
 
   const hasActiveFilters = selectedLabels.length > 0 || dateFilter !== 'all'
 
@@ -168,6 +176,41 @@ export default function NotesSidebar({ onRequestDelete, onNoteSelected }: NotesS
     [filteredNotes],
   )
 
+  const publicSidebarNotes = useMemo(
+    () =>
+      selectedLabels.length === 0
+        ? publicNotes.filter((note) => matchesDateFilter(note.updatedAt, dateFilter))
+        : [],
+    [publicNotes, selectedLabels, dateFilter],
+  )
+
+  const unlabeledEntries = useMemo<UnlabeledEntry[]>(() => {
+    const own: UnlabeledEntry[] = unlabeledNotes.map((note) => ({
+      id: note.id,
+      updatedAt: note.updatedAt,
+      render: () => (
+        <NoteListItem
+          key={note.id}
+          note={note}
+          isActive={note.id === selectedNoteId}
+          onSelect={() => {
+            selectNote(note.id)
+            onNoteSelected?.()
+          }}
+          onDelete={() => onRequestDelete(note)}
+        />
+      ),
+    }))
+    const pub: UnlabeledEntry[] = publicSidebarNotes.map((note) => ({
+      id: note.id,
+      updatedAt: note.updatedAt,
+      render: () => (
+        <PublicNoteListItem key={note.id} note={note} onSelect={() => navigate(`/share/${note.id}`)} />
+      ),
+    }))
+    return [...own, ...pub].sort((a, b) => b.updatedAt - a.updatedAt)
+  }, [unlabeledNotes, publicSidebarNotes, selectedNoteId, selectNote, onNoteSelected, onRequestDelete, navigate])
+
   const resetFilters = () => {
     setSelectedLabels([])
     setDateFilter('all')
@@ -195,7 +238,7 @@ export default function NotesSidebar({ onRequestDelete, onNoteSelected }: NotesS
         </Button>
       </Box>
       <Box className="notes-sidebar-list">
-        {filteredNotes.length === 0 && (
+        {filteredNotes.length === 0 && publicSidebarNotes.length === 0 && (
           <Typography className="notes-sidebar-empty">
             {notes.length === 0 ? 'Pas encore de note.' : 'Aucune note ne correspond aux filtres.'}
           </Typography>
@@ -233,46 +276,7 @@ export default function NotesSidebar({ onRequestDelete, onNoteSelected }: NotesS
             </Box>
           )
         })}
-        {unlabeledNotes.map((note) => (
-          <NoteListItem
-            key={note.id}
-            note={note}
-            isActive={note.id === selectedNoteId}
-            onSelect={() => {
-              selectNote(note.id)
-              onNoteSelected?.()
-            }}
-            onDelete={() => onRequestDelete(note)}
-          />
-        ))}
-      </Box>
-
-      <Box className="notes-sidebar-public-section">
-        <Box
-          className="notes-sidebar-public-header"
-          onClick={() => setIsPublicSectionOpen((prev) => !prev)}
-          role="button"
-          tabIndex={0}
-        >
-          <GlobeDoodle />
-          <Typography className="notes-sidebar-public-title">Notes partagées publiquement</Typography>
-          <ChevronDoodle isOpen={isPublicSectionOpen} />
-        </Box>
-        {isPublicSectionOpen && (
-          <Box className="notes-sidebar-public-list">
-            {isLoadingPublicNotes && (
-              <Box className="notes-sidebar-public-loading">
-                <CircularProgress size={18} />
-              </Box>
-            )}
-            {!isLoadingPublicNotes && publicNotes.length === 0 && (
-              <Typography className="notes-sidebar-empty">Aucune note partagée pour l'instant.</Typography>
-            )}
-            {publicNotes.map((note) => (
-              <PublicNoteListItem key={note.id} note={note} onSelect={() => navigate(`/share/${note.id}`)} />
-            ))}
-          </Box>
-        )}
+        {unlabeledEntries.map((entry) => entry.render())}
       </Box>
 
       <FilterNotesDialog
